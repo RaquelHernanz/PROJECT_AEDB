@@ -93,7 +93,9 @@ def index_at_residue(sequence: str, n_residues: int) -> int:
 
 def split_at(msa: list[str], split_indexes: list[int]) -> tuple[list[str], list[str], list[int]]:
     """
-    Split each sequence of an MSA at its own index.
+    Split each MSA sequence at its own index (previously obtained from index_at_residue). 
+    The idea is to obtain the parent sequences (left and right) from spliting each MSA sequence, 
+    and how many residues are in total on the left (l) parent sequences 
 
     Parameters
     msa: list[str]. Alignment to split, one string per sequence.
@@ -106,25 +108,36 @@ def split_at(msa: list[str], split_indexes: list[int]) -> tuple[list[str], list[
 
     Example
     split_at(["ATC-G-G-TT"], [3]) -> (["ATC"], ["-G-G-TT"], [3])
+
+    left        right     residues
+    ATC        -G-G-TT    3
+    A-C        CGC-ATC    2
+    A-C        CG--ATC    2
+
+    residue_counts = [3, 2, 2]
+
     """
     left: list[str] = []
     right: list[str] = []
     residue_counts: list[int] = []
     for i in range(len(msa)):
         sequence = msa[i]
+        #Choose the splitting index previously obtained
         split_index = split_indexes[i]
+        #Left: From Seq[0] to Seq[index-1], like ATC
         left_part = sequence[:split_index]
         left.append(left_part)
+        #From Seq[index] to Seq[n-1], like -G-G-TT
         right.append(sequence[split_index:])
-        residue_counts.append(count_residues(left_part))
+        residue_counts.append(count_residues(left_part)) #It would be 3
     return left, right, residue_counts
 
 
 def residues_to_indexes(msa: list[str], residue_counts: list[int]) -> list[int]:
     """
-    Compute, for each sequence, the split index that keeps a given
-    number of residues on the left. Used to split the second parent at the same residues where the
-    first parent was split.
+    Compute for each sequence the function index_at_residue, obtaining the split index 
+    that keeps a given number of residues on the left. Sometimes the cuts can be irregular
+    or jagged (the index positions obtained are not equal between sequences)
 
     Parameters
     msa: list[str]. Alignment to split (second parent).
@@ -137,7 +150,12 @@ def residues_to_indexes(msa: list[str], residue_counts: list[int]) -> list[int]:
     Example
     residues_to_indexes(["ATCGG---TT", "AC-CGCA-TC", "A---CCGATC"], [3, 2, 2])
     >> [3, 2, 5]
+
+    ATCGG---TT  → 3 residues → index 3   (ATC | GG---TT)
+    AC-CGCA-TC  → 2 residues → index 2   (AC  | -CGCA-TC)
+    A---CCGATC  → 2 residues → index 5   (A---C | CGATC)
     """
+
     split_indexes: list[int] = []
     for i in range(len(msa)):
         split_indexes.append(index_at_residue(msa[i], residue_counts[i]))
@@ -148,8 +166,9 @@ def residues_to_indexes(msa: list[str], residue_counts: list[int]) -> list[int]:
 
 def pad_alignment(msa: list[str], side: str) -> list[str]:
     """
-    Pad the sequences of a (jagged) MSA part with gaps so that all of
-    them have the length of the longest one.
+    Pad the parent sequences (in other words, it makes their length equal), since some 
+    of the them maybe jagged. To do this the function must add gaps so that all have length 
+    of the longest one. 
 
     The left part of a split MSA must be padded on the right ("r") and
     the right part on the left ("l"), so that the residues stay next
@@ -165,15 +184,29 @@ def pad_alignment(msa: list[str], side: str) -> list[str]:
 
     Raises ValueError
         If `side` is not "l" or "r".
+
+    Example:
+
+    (ATC | GG---TT)
+    (AC  | -CGCA-TC)
+    (A---C | CGATC)
+
+    left2 → "r"      right2 → "l"
+    ATC--            -GG---TT
+    AC---            -CGCA-TC
+    A---C            ---CGATC
+
     """
     if side not in ("l", "r"):
         raise ValueError('side must be "l" or "r".')
 
+    #What is the maximun length of the right/left sequences
     max_length = 0
     for sequence in msa:
         if len(sequence) > max_length:
-            max_length = len(sequence)
-
+            max_length = len(sequence) 
+    
+    #We add the gaps to the sequences
     padded: list[str] = []
     for sequence in msa:
         padding = GAP * (max_length - len(sequence))
@@ -190,7 +223,7 @@ def merge(left: list[str], right: list[str]) -> list[str]:
     from two different MSAs.
 
     Both parts must have the same number of sequences and each part
-    must already be rectangular (see `pad_alignment`).
+    must already be rectangular (see the pad_alignment function).
 
     Parameters
     left : list[str]. Left part (one string per sequence).
@@ -198,8 +231,19 @@ def merge(left: list[str], right: list[str]) -> list[str]:
 
     Returns
     list[str]. Merged alignment: ``left[i] + right[i]`` for each sequence.
+
+    Example
+    ATC--      -GG---TT
+    AC---      -CGCA-TC
+    A---C      ---CGATC
+
+    ATC-GG---TT
+    A-C-CGCA-TC
+    A-C---CGATC
+
     """
     merged: list[str] = []
+    #Iterate through the list of parent sequences
     for i in range(len(left)):
         merged.append(left[i] + right[i])
     return merged
@@ -231,16 +275,29 @@ def clean_alignment(msa: list[str]) -> list[str]:
 
     Returns
     list[str]. New alignment without gap-only columns.
+
+    Example
+    We have a column made of -
+    ATC-GG---TT
+    A-C-CGCA-TC
+    A-C---CGATC
+
+    ATCGG---TT
+    A-CCGCA-TC
+    A-C--CGATC
+
     """
     if not msa:
         return []
 
     kept_columns: list[int] = []
     for column in range(len(msa[0])):
+        #We check which index columns are not full of gaps with is_all_gaps()
         if not is_all_gaps(msa, column):
             kept_columns.append(column)
 
     cleaned: list[str] = []
+    #Ad we add the nucleotides to the cleaned sequence, without the gap columns
     for sequence in msa:
         new_sequence = ""
         for column in kept_columns:
@@ -275,15 +332,23 @@ def generate_offspring(parent1: list[str], parent2: list[str], split_column: int
     Raises ValueError
         If the parents have a different number of sequences or if
         `split_column` is outside [0, len(parent1[0])].
+
+    Example
+    offspring1 = left(p1) + right(p2)  offspring2 = left(p2) + right(p1)
+    ATCGG---TT                         ATC--G-G-TT
+    A-CCGCA-TC                         AC--CGC-ATC
+    A-C--CGATC                         A--CCG--ATC
     """
     if len(parent1) != len(parent2):
         raise ValueError("Parents must have the same number of sequences.")
     if not 0 <= split_column <= len(parent1[0]):
         raise ValueError(f"split_column must be between 0 and {len(parent1[0])}.")
 
-    # 1. Split the first parent at a single column
+    # 1. Split the first parent sequences at a single column in common
     left1, right1, residue_counts = split_at(parent1, [split_column] * len(parent1))
-    # 2. Split the second parent at the same residues
+    #We need the exact number of residues for the parents2 left and right split
+
+    # 2. Split the second parent with the same residues number, but first obtain the indexes for that split. 
     split_indexes = residues_to_indexes(parent2, residue_counts)
     left2, right2, _ = split_at(parent2, split_indexes)
     # 3. Pad the jagged parts of the second parent
