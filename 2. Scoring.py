@@ -1,7 +1,5 @@
 from crossover import GAP, clean_alignment, print_msa
 
-#---------------------------- 3. SCORING -------------------------------------------------------
-
 ###################################### PAIR SCORE #################################################
 
 def pair_score(char1: str, char2: str, sub_matrix: dict[str, dict[str, int]], gap: int) -> int:
