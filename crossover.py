@@ -10,22 +10,15 @@ gaps are indicated by '-'. All strings of a valid MSA have the same
 length and there are no columns made only of gaps.
 """
 
+## IMPORT
+import utils
+
 ### CONSTANTS
 GAP = "-"
 
 
+
 ### AUXILIARY FUNCTIONS
-
-def print_msa(msa: list[str]) -> None:
-    """
-    Print an MSA, one sequence per line.
-
-    Parameters
-    msa: list[str]. Alignment to print, one string per sequence.
-    """
-    for sequence in msa:
-        print(sequence)
-
 
 def count_residues(sequence: str) -> int:
     """
@@ -249,62 +242,6 @@ def merge(left: list[str], right: list[str]) -> list[str]:
     return merged
 
 
-def is_all_gaps(msa: list[str], column: int) -> bool:
-    """
-    Check whether a column of an MSA is composed solely of gaps.
-
-    Parameters
-    msa: list[str]. Rectangular alignment.
-    column: int. Index of the column to check (0-based).
-
-    Returns
-    bool: True if every sequence has a gap at `column`, False otherwise.
-    """
-    for sequence in msa:
-        if sequence[column] != GAP:
-            return False
-    return True
-
-
-def clean_alignment(msa: list[str]) -> list[str]:
-    """
-    Remove the columns composed solely of gaps from an MSA.
-
-    Parameters
-    msa: list[str]. Rectangular alignment, possibly with gap-only columns.
-
-    Returns
-    list[str]. New alignment without gap-only columns.
-
-    Example
-    We have a column made of -
-    ATC-GG---TT
-    A-C-CGCA-TC
-    A-C---CGATC
-
-    ATCGG---TT
-    A-CCGCA-TC
-    A-C--CGATC
-
-    """
-    if not msa:
-        return []
-
-    kept_columns: list[int] = []
-    for column in range(len(msa[0])):
-        #We check which index columns are not full of gaps with is_all_gaps()
-        if not is_all_gaps(msa, column):
-            kept_columns.append(column)
-
-    cleaned: list[str] = []
-    #Ad we add the nucleotides to the cleaned sequence, without the gap columns
-    for sequence in msa:
-        new_sequence = ""
-        for column in kept_columns:
-            new_sequence += sequence[column]
-        cleaned.append(new_sequence)
-    return cleaned
-
 
 ### CROSSOVER FUNCTION
 
@@ -355,8 +292,8 @@ def generate_offspring(parent1: list[str], parent2: list[str], split_column: int
     left2_padded = pad_alignment(left2, "r")
     right2_padded = pad_alignment(right2, "l")
     # 4. Merge and remove gap-only columns
-    offspring1 = clean_alignment(merge(left1, right2_padded))
-    offspring2 = clean_alignment(merge(left2_padded, right1))
+    offspring1 = utils.clean_alignment(merge(left1, right2_padded))
+    offspring2 = utils.clean_alignment(merge(left2_padded, right1))
     return offspring1, offspring2
 
 
@@ -365,17 +302,16 @@ def generate_offspring(parent1: list[str], parent2: list[str], split_column: int
 if __name__ == "__main__":
     align1 = ["ATC-G-G-TT", "A-CCGC-ATC", "A-CCG--ATC"]
     align2 = ["ATCGG---TT", "AC-CGCA-TC", "A---CCGATC"]
-    print_msa(align1)
+    utils.print_msa(align1)
     print()
-    print_msa(align2)
-    print()
+    utils.print()
 
     print(count_residues("--AC--"))          # 2
     print(index_at_residue("--AC--GT", 2))   # 4
 
     left1, right1, residue_counts = split_at(align1, [3] * len(align1))
-    print_msa(left1)
-    print_msa(right1)
+    utils.print_msa(left1)
+    utils.print_msa(right1)
     print(residue_counts)                    # [3, 2, 2]
 
     split_indexes = residues_to_indexes(align2, residue_counts)
@@ -383,20 +319,20 @@ if __name__ == "__main__":
 
     left2, right2, _ = split_at(align2, split_indexes)
     left2_padded = pad_alignment(left2, "r")
-    print_msa(left2_padded)
+    utils.print_msa(left2_padded)
     right2_padded = pad_alignment(right2, "l")
-    print_msa(right2_padded)
+    utils.print_msa(right2_padded)
 
     left1_right2 = merge(left1, right2_padded)
-    print_msa(left1_right2)
-    print(is_all_gaps(left1_right2, 2))      # False
-    print(is_all_gaps(left1_right2, 3))      # True
+    utils.print_msa(left1_right2)
+    print(utils.is_all_gaps(left1_right2, 2))      # False
+    print(utils.is_all_gaps(left1_right2, 3))      # True
 
-    left1_right2_clean = clean_alignment(left1_right2)
-    print_msa(left1_right2_clean)
+    left1_right2_clean = utils.clean_alignment(left1_right2)
+    utils.print_msa(left1_right2_clean)
     print()
 
     offspring1, offspring2 = generate_offspring(align1, align2, 3)
-    print_msa(offspring1)
+    utils.print_msa(offspring1)
     print()
-    print_msa(offspring2)
+    utils.print_msa(offspring2)
