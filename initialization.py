@@ -64,8 +64,6 @@ def random_msa(sequences: list[str], max_offset: int, rng: r.Random) -> list[str
 
   return aligned_sequences
 
-  #Create the population: Repeat the creation of MSAs until the desired population size is reached."""
-
 
 #------------------------------ REMOVE GAP COLUMNS -----------------------------------------------------------
 
