@@ -1,11 +1,3 @@
-#import initialization as init
-#import scoring as sc
-#import mutations as mt
-#import crossover as cso
-#from crossover import GAP, clean_alignment, print_msa
-#import utils
-
-
 from Bio import SeqIO
 import random as r
 
