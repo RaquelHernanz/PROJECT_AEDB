@@ -21,6 +21,10 @@ def read_fasta(filename):
     #Biopython stores sequences as Seq objects. When converting to str
     sequences = [str(record.seq) for record in records]
 
+    # Check if the FASTA file contains sequences.
+    if not sequences:
+           raise ValueError("No sequences found in the FASTA file.")
+
     return sequences 
 
 
@@ -29,7 +33,7 @@ def read_fasta(filename):
 def random_msa(sequences: list[str], max_offset: int, rng: r.Random) -> list[str]:
   """SKELETON- Create the initial population of MSAs (Multiple Sequence Alignments) (SAGA approach).
 
-    Parameters
+    Parameters:
     - sequences: list[str]. Unaligned sequences (no gaps).
     - max_offset: int. Maximum number of leading gaps per sequence.
     - rng: random.Random. Random number generator (seeded, for reproducibility).
@@ -71,6 +75,39 @@ def random_msa(sequences: list[str], max_offset: int, rng: r.Random) -> list[str
   #Create the population: Repeat the creation of MSAs until the desired population size is reached."""
 
 
+#------------------------------ REMOVE GAP COLUMNS -----------------------------------------------------------
+
+def remove_gap_columns(msa: list[str]) -> list[str]:
+    """
+    SKELETON - Remove columns containing only gaps from an MSA.
+    Parameter: msa: list[str]
+    Return: list[str] of sequences without gap-only columns
+    """
+    #to avoid errors in case we have an empty alignment
+    if not msa:
+       return []
+    
+    cleaned_msa = ["" for sequence in msa]
+
+    # 1. Iterate through each column of the alignment.
+    #   - msa[0] because all sequences have the same length
+
+    for column in range(len(msa[0])):
+
+        count = 0
+
+        # Count the amino acids in each column.
+        for sequence in msa:
+            if sequence[column] != "-":
+                count += 1
+
+        # Keep the column if it contains at least one amino acid.
+        if count > 0:
+            for i in range(len(msa)):
+                cleaned_msa[i] += msa[i][column]
+
+
+    return cleaned_msa
 
 #--------------------- 4. POPULATION INITIALIZATION -------------------------------------------------
 
@@ -99,4 +136,6 @@ def initialize_population(sequences: list[str], population_size: int, max_offset
       population.append(msa)
 
     return population
+
+
 
