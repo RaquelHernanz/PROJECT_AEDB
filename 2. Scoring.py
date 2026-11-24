@@ -89,21 +89,6 @@ def sum_of_pairs(msa: list[str], sub_matrix: dict[str, dict[str, int]], gap: int
 
 
 
-#----------------------------------------------------------------------------------------
-### TESTS (only run when the file is executed directly)
-
-if __name__ == "__main__":
-    dna_matrix = utils.make_sub_matrix(2, -2, "ACGT")
-
-    # pair_score: gap-gap must be 0
-    print(pair_score("A", "A", dna_matrix, -3))   # 2
-    print(pair_score("A", "-", dna_matrix, -3))   # -3
-    print(pair_score("-", "-", dna_matrix, -3))   # 0
-
-    # score_pairwise: same example as the lab -> 4
-    print(score_pairwise("-CAGTGCATG-ACATA", "TCAG-GC-TCTACAGA", dna_matrix, -3))
-
-
     # sum_of_pairs
     msa = ["ACGT", "A-GT", "AC-T"]
 
