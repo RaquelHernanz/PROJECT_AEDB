@@ -111,15 +111,15 @@ def initialize_population(sequences: list[str], population_size: int, max_offset
     - max_offset: int. Maximum number of leading gaps per sequence.
     - seed: int. Seed for the random generator.
 
-    RETURN: list[list[str]]. Population (list of MSAs).
+    RETURN: list[list[str]]. Population (list of MSAs)."""
 
   
-    1. Create a `random.Random(seed)` generator. """
+    #1. Create a `random.Random(seed)` generator.
     rng = r.Random(seed)
     population = []
 
+    #2. Call `random_msa`population_size` times with that generator.
     for i in range(population_size):
-      """ 2. Call `random_msa` `population_size` times with that generator."""
 
       msa = random_msa(sequences, max_offset, rng)
 
