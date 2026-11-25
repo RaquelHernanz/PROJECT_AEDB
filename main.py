@@ -18,65 +18,12 @@ docstring describes what to do.
 """
 
 import random as r
-import initialization as init
-import scoring as sc
-import mutations as mt
-import crossover as cso
-from crossover import GAP, clean_alignment, print_msa
+import Population_initialization_1 as init
+import Scoring_2 as sc
+import Mutations_4 as mt
+import Crossover_3 as cso
 import utils
-
-### 6. VALIDATION (for testing)
-
-def is_valid_msa(msa: list[str], original_sequences: list[str]) -> bool:
-    """
-    Check that an MSA is valid for a given set of sequences.
-
-    An MSA is valid if:
-    - it has one row per original sequence;
-    - all rows have the same length;
-    - there are no gap-only columns;
-    - removing the gaps from each row gives back the original sequence
-      (same order).
-
-    Use it after initialization, after each mutation and, from the
-    tests, on the crossover offspring.
-
-    Parameters
-    msa : list[str]. Alignment to check.
-    original_sequences : list[str]. Unaligned sequences the MSA should contain.
-
-    Returns
-    bool
-        True if the MSA is valid, False otherwise.
-    """
-    if len(msa) != len(original_sequences):
-        return False
-    if not msa:
-        return True
-
-    # All rows with the same length
-    length = len(msa[0])
-    for row in msa:
-        if len(row) != length:
-            return False
-
-    # No gap-only columns
-    for column in range(length):
-        only_gaps = True
-        for row in msa:
-            if row[column] != GAP:
-                only_gaps = False
-                break
-        if only_gaps:
-            return False
-
-    # Same residues, in the same order
-    for i in range(len(msa)):
-        if msa[i].replace(GAP, "") != original_sequences[i]:
-            return False
-
-    return True
-
+from utils import GAP
 
 ### TESTS (only run when the file is executed directly)
 
@@ -85,10 +32,10 @@ if __name__ == "__main__":
 
     # is_valid_msa
     original = ["ATCGGTT", "ACCGCATC", "ACCGATC"]
-    print(is_valid_msa(["ATC-G-G-TT", "A-CCGC-ATC", "A-CCG--ATC"], original))  # True
-    print(is_valid_msa(["ATC-GG-TT", "A-CCGC-ATC", "A-CCG--ATC"], original))   # False (lengths)
-    print(is_valid_msa(["-ATCGGTT", "-ACCGCATC", "-ACCGATC"], original))      # False (lengths)
-    print(is_valid_msa(["-ATCGGTT-", "-ACCGCATC", "-ACCGATC-"], original))    # False (gap-only column)
+    print(utils.is_valid_msa(["ATC-G-G-TT", "A-CCGC-ATC", "A-CCG--ATC"], original))  # True
+    print(utils.is_valid_msa(["ATC-GG-TT", "A-CCGC-ATC", "A-CCG--ATC"], original))   # False (lengths)
+    print(utils.is_valid_msa(["-ATCGGTT", "-ACCGCATC", "-ACCGATC"], original))      # False (lengths)
+    print(utils.is_valid_msa(["-ATCGGTT-", "-ACCGCATC", "-ACCGATC-"], original))    # False (gap-only column)
 
     # Uncomment when the files are in the same folder:
     # identifiers, sequences = read_fasta("cytochromes.fa")

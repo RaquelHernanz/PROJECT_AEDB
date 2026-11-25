@@ -1,8 +1,8 @@
 import random as r
-from crossover import GAP, clean_alignment, print_msa
 import utils
+from utils import GAP, clean_alignment, print_msa
 
-### 5. MUTATION OPERATORS
+#-------------------------------------------- MUTATION OPERTATORS -------------------------------------------
 
 def find_gap_blocks(sequence: str) -> list[tuple[int, int]]:
     """

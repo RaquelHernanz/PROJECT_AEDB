@@ -10,25 +10,23 @@ gaps are indicated by '-'. All strings of a valid MSA have the same
 length and there are no columns made only of gaps.
 """
 
-## IMPORT
+
+#-------------------------------------------- IMPORTS -------------------------------------------
 import utils
-
-### CONSTANTS
-GAP = "-"
+from utils import GAP, clean_alignment
 
 
-
-### AUXILIARY FUNCTIONS
+#-------------------------------------------- AUXILIAR FUNCTIONS -------------------------------------------
 
 def count_residues(sequence: str) -> int:
     """
     Count the residues (non-gap characters) in an aligned sequence.
 
     Parameters
-    sequence: str. A single line of an MSA, possibly containing gaps.
+    - sequence: str. A single line of an MSA, possibly containing gaps.
 
     Returns
-    int. Number of characters different from the gap symbol.
+    - int. Number of characters different from the gap symbol.
 
     Example
     >>> count_residues("--AC--")
@@ -50,11 +48,11 @@ def index_at_residue(sequence: str, n_residues: int) -> int:
     right part.
 
     Parameters
-    sequence: str. A single line of an MSA, possibly containing gaps.
-    n_residues: int. Number of residues the left part must contain.
+    - sequence: str. A single line of an MSA, possibly containing gaps.
+    - n_residues: int. Number of residues the left part must contain.
 
     Returns
-    int. Index such that ``sequence[:index]`` contains exactly
+    - int. Index such that ``sequence[:index]`` contains exactly
         `n_residues` residues. Returns 0 if `n_residues` is 0
         (empty left part; leading gaps go to the right part).
     
@@ -82,7 +80,7 @@ def index_at_residue(sequence: str, n_residues: int) -> int:
     raise ValueError(f"Sequence has fewer than {n_residues} residues.")
 
 
-### SPLITTING
+#-------------------------------------------- SPLITTING -------------------------------------------
 
 def split_at(msa: list[str], split_indexes: list[int]) -> tuple[list[str], list[str], list[int]]:
     """
@@ -91,13 +89,13 @@ def split_at(msa: list[str], split_indexes: list[int]) -> tuple[list[str], list[
     and how many residues are in total on the left (l) parent sequences 
 
     Parameters
-    msa: list[str]. Alignment to split, one string per sequence.
-    split_indexes: list[int]. Split position for each sequence: ``msa[i]`` is cut at ``split_indexes[i]``.
+    - msa: list[str]. Alignment to split, one string per sequence.
+    - split_indexes: list[int]. Split position for each sequence: ``msa[i]`` is cut at ``split_indexes[i]``.
 
     Returns
-    left: list[str]. Left part of each sequence (``msa[i][:split_indexes[i]]``).
-    right: list[str]. Right part of each sequence (``msa[i][split_indexes[i]:]``).
-    residue_counts: list[int]. Number of residues in each line of the left part.
+    - left: list[str]. Left part of each sequence (``msa[i][:split_indexes[i]]``).
+    - right: list[str]. Right part of each sequence (``msa[i][split_indexes[i]:]``).
+    - residue_counts: list[int]. Number of residues in each line of the left part.
 
     Example
     split_at(["ATC-G-G-TT"], [3]) -> (["ATC"], ["-G-G-TT"], [3])
@@ -133,12 +131,12 @@ def residues_to_indexes(msa: list[str], residue_counts: list[int]) -> list[int]:
     or jagged (the index positions obtained are not equal between sequences)
 
     Parameters
-    msa: list[str]. Alignment to split (second parent).
-    residue_counts: list[int]. Number of residues that must stay on the left part of each
+    - msa: list[str]. Alignment to split (second parent).
+    - residue_counts: list[int]. Number of residues that must stay on the left part of each
         sequence (as returned by `split_at` on the first parent).
 
     Returns
-    list[int]. Split index for each sequence of `msa`.
+    - list[int]. Split index for each sequence of `msa`.
 
     Example
     residues_to_indexes(["ATCGG---TT", "AC-CGCA-TC", "A---CCGATC"], [3, 2, 2])
@@ -157,6 +155,8 @@ def residues_to_indexes(msa: list[str], residue_counts: list[int]) -> list[int]:
 
 ### PADDING, MERGING AND CLEANING
 
+#-------------------------------------------- PADDING, MERGING -------------------------------------------
+
 def pad_alignment(msa: list[str], side: str) -> list[str]:
     """
     Pad the parent sequences (in other words, it makes their length equal), since some 
@@ -169,11 +169,11 @@ def pad_alignment(msa: list[str], side: str) -> list[str]:
     removed later by `clean_alignment`.
 
     Parameters
-    msa: list[str]. Part of an MSA, possibly with sequences of different lengths.
-    side: str. "r" to add the gaps at the end, "l" to add them at the start.
+    - msa: list[str]. Part of an MSA, possibly with sequences of different lengths.
+    - side: str. "r" to add the gaps at the end, "l" to add them at the start.
 
     Returns
-    list[str]. New list where every sequence has the same length.
+    - list[str]. New list where every sequence has the same length.
 
     Raises ValueError
         If `side` is not "l" or "r".
@@ -218,12 +218,12 @@ def merge(left: list[str], right: list[str]) -> list[str]:
     Both parts must have the same number of sequences and each part
     must already be rectangular (see the pad_alignment function).
 
-    Parameters
-    left : list[str]. Left part (one string per sequence).
-    right : list[str]. Right part (one string per sequence).
+    Parameters:
+    - left : list[str]. Left part (one string per sequence).
+    - right : list[str]. Right part (one string per sequence).
 
     Returns
-    list[str]. Merged alignment: ``left[i] + right[i]`` for each sequence.
+    - list[str]. Merged alignment: ``left[i] + right[i]`` for each sequence.
 
     Example
     ATC--      -GG---TT
@@ -241,9 +241,7 @@ def merge(left: list[str], right: list[str]) -> list[str]:
         merged.append(left[i] + right[i])
     return merged
 
-
-
-### CROSSOVER FUNCTION
+#-------------------------------------------- CROSSOVER -------------------------------------------
 
 def generate_offspring(parent1: list[str], parent2: list[str], split_column: int) -> tuple[list[str], list[str]]:
     """
@@ -297,7 +295,7 @@ def generate_offspring(parent1: list[str], parent2: list[str], split_column: int
     return offspring1, offspring2
 
 
-### EXAMPLE TESTS (only run when the file is executed directly)
+#-------------------------------------------- TESTS -------------------------------------------
 
 if __name__ == "__main__":
     align1 = ["ATC-G-G-TT", "A-CCGC-ATC", "A-CCG--ATC"]

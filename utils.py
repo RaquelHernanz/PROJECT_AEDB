@@ -1,6 +1,12 @@
+#Install biopython for the project and script (pip install biopython)
+import Bio
+from Bio import SeqIO
 
-### CONSTANTS
+#-------------------------------------------- CONSTANTS -------------------------------------------
+
 GAP = "-"
+
+#-------------------------------------------- SUBMATRIX FUNCTIONS -------------------------------------------
 
 def make_sub_matrix(match: int, mismatch: int, alphabet: str) -> dict:
     sub_matrix = {}
@@ -27,6 +33,26 @@ def read_sub_matrix(path: str) -> dict:
             sub_matrix[letter][alphabet[i]] = int(scores[i])
     return sub_matrix
 
+
+#-------------------------------------------- FASTA FILE -------------------------------------------
+
+def read_fasta(filename): 
+    """Reading the FASTA file. Returns a list with all sequences."""
+
+    # SeqIO.parse lê qualquer extensão (.fasta, .txt, .fa) diretamente
+    records = list(SeqIO.parse(filename, "fasta"))
+
+    #Biopython stores sequences as Seq objects. When converting to str
+    sequences = [str(record.seq).upper() for record in records]
+
+    # Check if the FASTA file contains sequences.
+    if not sequences:
+        raise ValueError("No sequences found in the FASTA file.")
+
+    return sequences 
+
+#-------------------------------------------- PRINT MSA -------------------------------------------
+
 def print_msa(msa: list[str]) -> None:
     """
     Print an MSA, one sequence per line.
@@ -36,6 +62,8 @@ def print_msa(msa: list[str]) -> None:
     """
     for sequence in msa:
         print(sequence)
+
+#-------------------------------------------- GAP VERIFICATION IN MSA COLUMNS -------------------------------------------
 
 def is_all_gaps(msa: list[str], column: int) -> bool:
     """
@@ -53,6 +81,8 @@ def is_all_gaps(msa: list[str], column: int) -> bool:
             return False
     return True
 
+
+#-------------------------------------------- CLEAN ALIGNMENT -------------------------------------------
 
 def clean_alignment(msa: list[str]) -> list[str]:
     """
@@ -92,3 +122,74 @@ def clean_alignment(msa: list[str]) -> list[str]:
             new_sequence += sequence[column]
         cleaned.append(new_sequence)
     return cleaned
+
+
+#-------------------------------------------- MSA VALIDATION -------------------------------------------
+
+def is_valid_msa(msa: list[str], original_sequences: list[str]) -> bool:
+    """
+    Check that an MSA is valid for a given set of sequences.
+
+    An MSA is valid if:
+    - it has one row per original sequence;
+    - all rows have the same length;
+    - there are no gap-only columns;
+    - removing the gaps from each row gives back the original sequence
+      (same order).
+
+    Use it after initialization, after each mutation and, from the
+    tests, on the crossover offspring.
+
+    Parameters
+    msa : list[str]. Alignment to check.
+    original_sequences : list[str]. Unaligned sequences the MSA should contain.
+
+    Returns
+    bool
+        True if the MSA is valid, False otherwise.
+    """
+    if len(msa) != len(original_sequences):
+        return False
+    if not msa:
+        return True
+
+    # All rows with the same length
+    length = len(msa[0])
+    for row in msa:
+        if len(row) != length:
+            return False
+
+    # No gap-only columns
+    for column in range(length):
+        only_gaps = True
+        for row in msa:
+            if row[column] != GAP:
+                only_gaps = False
+                break
+        if only_gaps:
+            return False
+
+    # Same residues, in the same order
+    for i in range(len(msa)):
+        if msa[i].replace(GAP, "") != original_sequences[i]:
+            return False
+
+    return True
+
+if __name__ == "__main__":
+    FILE = "cytochromes.fa"   # <- cambia por vuestro archivo
+
+    seqs = read_fasta(FILE)
+    print(len(seqs))                                   # nº of expected seqs
+    print([len(s) for s in seqs])                      # expected lenght
+    print(all(s == s.upper() for s in seqs))           # True
+    print(all(GAP not in s for s in seqs))             # True (without gaps)
+    print(all(set(s) <= set("ACGT") for s in seqs))    # True if ADN (for proteínas, FALSE)
+
+    """
+    13
+    [105, 105, 105, 105, 105, 105, 104, 104, 104, 104, 105, 104, 104]
+    True
+    True
+    False
+    """

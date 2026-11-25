@@ -1,10 +1,11 @@
-from crossover import GAP, clean_alignment, print_msa
+import utils
+from utils import GAP
 
-###################################### PAIR SCORE #################################################
+#-------------------------------------------- PAIR SCORE -------------------------------------------
 
 def pair_score(char1: str, char2: str, sub_matrix: dict[str, dict[str, int]], gap: int) -> int:
     """
-    SKELETON- Score two characters of the same MSA column.
+    Score two characters of the same MSA column.
     (Previously `score_column` in the lab code from class. The gap-gap case was added: in 
     an MSA two sequences can both have a gap in the same column, and that pair must not be penalized.)
 
@@ -23,13 +24,11 @@ def pair_score(char1: str, char2: str, sub_matrix: dict[str, dict[str, int]], ga
         return gap
     return sub_matrix[char1][char2]
 
-
-###################################### Score pairwise #################################################
-
+#-------------------------------------------- SCORE PAIRWISE -------------------------------------------
 
 def score_pairwise(seq1: str, seq2: str, sub_matrix: dict[str, dict[str, int]], gap: int) -> int:
     """
-    SKELETON- Score two aligned sequences (two rows of an MSA). It was previously 
+    Score two aligned sequences (two rows of an MSA). It was previously 
     `score_alignment` in the lab code from class.
 
     Parameters
@@ -51,19 +50,19 @@ def score_pairwise(seq1: str, seq2: str, sub_matrix: dict[str, dict[str, int]], 
 
     return total
 
-
-###################################### Sum of pairs #################################################
+#-------------------------------------------- SUM OF PAIRS -------------------------------------------
 
 def sum_of_pairs(msa: list[str], sub_matrix: dict[str, dict[str, int]], gap: int) -> int:
     """
-    SKELETON - Compute the sum-of-pairs score of an MSA.
+    Compute the sum-of-pairs score of an MSA.
 
     Parameters
     - msa : list[str]. Alignment to score.
     - sub_matrix : dict[str, dict[str, int]]. Substitution matrix.
     - gap : int. Gap penalty (negative value).
 
-    Returns: int. Total score (higher is better).
+    Returns: 
+    - int. Total score (higher is better).
 
      To implement
         - Add `score_pairwise(msa[i], msa[j], sub_matrix, gap)` for every
@@ -85,9 +84,22 @@ def sum_of_pairs(msa: list[str], sub_matrix: dict[str, dict[str, int]], gap: int
 
     return total
 
+if __name__ == "__main__":
+    
+    dna_matrix = utils.make_sub_matrix(2, -2, "ACGT")
+    msa = ["ACGT", "A-GT", "AC-T"] #4
 
+    # pair_score
+    print(pair_score("A", "A", dna_matrix, -3))     # 2
+    print(pair_score("A", "C", dna_matrix, -3))     # -2
+    print(pair_score("A", "-", dna_matrix, -3))     # -3
+    print(pair_score("-", "-", dna_matrix, -3))     # 0
+
+    # score_pairwise
+    print(score_pairwise("ACGT", "ACGT", dna_matrix, -3))   # 8
+    print(score_pairwise("AC-T", "A-GT", dna_matrix, -3))   # -2  (2 -3 -3 +2)
 
     # sum_of_pairs
     msa = ["ACGT", "A-GT", "AC-T"]
-
-    print(sum_of_pairs(msa, dna_matrix, -3))
+    print(sum_of_pairs(msa, dna_matrix, -3))                # 4   (3 + 3 - 2)
+    print(sum_of_pairs(["A", "-", "-"], dna_matrix, -3))    # -6  (gap-gap cost 0)
