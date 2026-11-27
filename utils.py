@@ -154,14 +154,14 @@ def is_valid_msa(msa: list[str], original_sequences: list[str]) -> bool:
         return True
 
     # All rows with the same length
-    length = len(msa[0])
+    length: int = len(msa[0])
     for row in msa:
         if len(row) != length:
             return False
 
     # No gap-only columns
     for column in range(length):
-        only_gaps = True
+        only_gaps: bool = True
         for row in msa:
             if row[column] != GAP:
                 only_gaps = False
