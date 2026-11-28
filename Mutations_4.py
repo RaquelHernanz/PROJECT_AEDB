@@ -65,7 +65,7 @@ def insert_gap_block(msa: list[str], rng: r.Random) -> list[str]:
 
     Example
       row 2:  -AC + -- + GT-   →  -AC--GT-
-      rest:   +"--" al final   →  AC--GT--   A-CGGT--
+      rest:   +"--" in the end →  A-CGGT--
     """
 
     #Step 1: We are going to copy the msa sequences
@@ -98,7 +98,7 @@ def insert_gap_block(msa: list[str], rng: r.Random) -> list[str]:
 
 def delete_gap_block(msa: list[str], rng: r.Random) -> list[str]:
     """
-    SKELETON - Mutation 2: delete a random gap block.
+    Delete a random gap block.
 
     Parameters
     - msa : list[str]. Alignment to mutate (must not be modified).
